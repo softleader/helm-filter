@@ -1,0 +1,19 @@
+hash: 3e9a0c94f21c36eceec4980840dd27c8a706cd072617fc5fbc856a207ca54ee2
+updated: 2018-08-06T15:31:56.229655+08:00
+imports:
+- name: github.com/ghodss/yaml
+  version: e9ed3c6dfb39bb1a32197cb10d527906fe4da4b6
+- name: github.com/inconshreveable/mousetrap
+  version: 76626ae9c91c4f2a10f34cad8ce83ea42c93bb75
+- name: github.com/otiai10/copy
+  version: c59d460454b7a0c318e59595cb3ea22a41ba2572
+- name: github.com/spf13/cobra
+  version: 7c4570c3ebeb8129a1f7456d0908a8b676b6f9f1
+- name: github.com/spf13/pflag
+  version: 3ebe029320b2676d667ae88da602a5f854788a8a
+- name: k8s.io/helm
+  version: 20adb27c7c5868466912eebdf6664e7390ebe710
+  subpackages:
+  - pkg/chartutil
+  - pkg/engine
+testImports: []

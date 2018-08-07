@@ -1,0 +1,9 @@
+name: "filter"
+# Version is the version of Helm plus the number of official builds for this
+# plugin
+version: "1.0.0"
+usage: "filter out template files"
+description: "Filter out template files."
+command: "$HELM_PLUGIN_DIR/filter"
+hooks:
+  install: "$HELM_PLUGIN_DIR/install-binary.sh"
