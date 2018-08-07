@@ -21,7 +21,7 @@ const (
 
 type filterCmd struct {
 	chartPath       string
-	isolationDir    string
+	outputDir       string
 	valuesFile      string
 	overwriteValues bool
 }
@@ -29,14 +29,14 @@ type filterCmd struct {
 func (cmd *filterCmd) run() error {
 	chart := cmd.chartPath
 
-	// isolate chart path if provided
-	if cmd.isolationDir != "" {
-		cmd.isolationDir = path.Join(cmd.isolationDir, path.Base(cmd.chartPath))
-		err := deepCopy(cmd.chartPath, cmd.isolationDir)
+	// copy chart to output-dir if provided
+	if cmd.outputDir != "" {
+		cmd.outputDir = path.Join(cmd.outputDir, path.Base(cmd.chartPath))
+		err := deepCopy(cmd.chartPath, cmd.outputDir)
 		if err != nil {
 			return err
 		}
-		chart = cmd.isolationDir
+		chart = cmd.outputDir
 	}
 
 	templatesPath := path.Join(chart, templatesDir)
@@ -50,7 +50,7 @@ func (cmd *filterCmd) run() error {
 		return err
 	}
 
-	// 只先 support 定義在第二層避免一直 loop 下去找
+	// 只先固定檢查在第二層的 key
 	for k, v := range values {
 		switch vv := v.(type) {
 		case map[interface{}]interface{}:
@@ -80,7 +80,7 @@ func (cmd *filterCmd) run() error {
 		if err != nil {
 			return err
 		}
-		out := path.Join(cmd.isolationDir, path.Base(cmd.valuesFile))
+		out := path.Join(cmd.outputDir, path.Base(cmd.valuesFile))
 		fmt.Printf("overwrote %s\n", out)
 		ioutil.WriteFile(out, b, defaultDirectoryPermission)
 	}

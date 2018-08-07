@@ -18,10 +18,10 @@ func TestRun(t *testing.T) {
 	cmd := filterCmd{
 		chartPath: path.Join(tmp, chart),
 	}
-	cmd.isolationDir = path.Join(cmd.chartPath, "tmp")
+	cmd.outputDir = path.Join(cmd.chartPath, "tmp")
 	cmd.valuesFile = path.Join(cmd.chartPath, "values-filter2.yaml")
 	cmd.overwriteValues = true
-	os.RemoveAll(cmd.isolationDir)
+	os.RemoveAll(cmd.outputDir)
 
 	err := cmd.run()
 	if err != nil {
