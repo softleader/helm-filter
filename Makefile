@@ -5,11 +5,12 @@ VERSION := $(shell sed -n -e 's/version:[ "]*\([^"]*\).*/\1/p' plugin.yaml)
 DIST := $(CURDIR)/_dist
 BUILD := $(CURDIR)/_build
 LDFLAGS := "-X main.version=${VERSION}"
+BINARY := filter
 
 .PHONY: install
 install: bootstrap build
 	mkdir -p $(HELM_PLUGIN_DIR)
-	cp $(BUILD)/filter $(HELM_PLUGIN_DIR)
+	cp $(BUILD)/$(BINARY) $(HELM_PLUGIN_DIR)
 	cp plugin.yaml $(HELM_PLUGIN_DIR)
 
 .PHONY: hookInstall
@@ -17,17 +18,17 @@ hookInstall: bootstrap build
 
 .PHONY: build
 build:
-	go build -o $(BUILD)/filter -ldflags $(LDFLAGS)
+	go build -o $(BUILD)/$(BINARY) -ldflags $(LDFLAGS)
 
 .PHONY: dist
 dist:
 	mkdir -p $(DIST)
-	GOOS=linux GOARCH=amd64 go build -o $(BUILD)/filter -ldflags $(LDFLAGS)
-	tar -zcvf $(DIST)/helm-filter-linux-$(VERSION).tgz $(BUILD)/filter README.md LICENSE plugin.yaml
-	GOOS=darwin GOARCH=amd64 go build -o $(BUILD)/filter -ldflags $(LDFLAGS)
-	tar -zcvf $(DIST)/helm-filter-macos-$(VERSION).tgz $(BUILD)/filter README.md LICENSE plugin.yaml
-	GOOS=windows GOARCH=amd64 go build -o $(BUILD)/filter.exe -ldflags $(LDFLAGS)
-	tar -zcvf $(DIST)/helm-filter-windows-$(VERSION).tgz $(BUILD)/filter.exe README.md LICENSE plugin.yaml
+	GOOS=linux GOARCH=amd64 go build -o $(BUILD)/$(BINARY) -ldflags $(LDFLAGS)
+	tar -zcvf $(DIST)/helm-$(BINARY)-linux-$(VERSION).tgz $(BUILD)/$(BINARY) README.md LICENSE plugin.yaml
+	GOOS=darwin GOARCH=amd64 go build -o $(BUILD)/$(BINARY) -ldflags $(LDFLAGS)
+	tar -zcvf $(DIST)/helm-$(BINARY)-macos-$(VERSION).tgz $(BUILD)/$(BINARY) README.md LICENSE plugin.yaml
+	GOOS=windows GOARCH=amd64 go build -o $(BUILD)/$(BINARY).exe -ldflags $(LDFLAGS)
+	tar -zcvf $(DIST)/helm-$(BINARY)-windows-$(VERSION).tgz $(BUILD)/$(BINARY).exe README.md LICENSE plugin.yaml
 
 .PHONY: bootstrap
 bootstrap:
