@@ -62,7 +62,7 @@ $ echo ".bak" >> mychart/.helmignore
 # Merge sit and client-a to values.yaml
 $ helm values mychart -f myenv/sit.yaml -f myenv/client-a.yaml -o mychart
 
-# Filter out and copy to tmp folder
+# Filter out files in templates-dir and copy to tmp folder
 $ helm filter mychart -o tmp
 
 # Pack
