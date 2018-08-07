@@ -9,8 +9,8 @@ import (
 	"io/ioutil"
 	"gopkg.in/yaml.v2"
 	"regexp"
-	"github.com/kataras/iris/core/errors"
 	"reflect"
+	"errors"
 )
 
 const (
