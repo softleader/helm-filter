@@ -4,6 +4,8 @@
 
 Helm plugin to filter out template files
 
+[![asciicast](https://asciinema.org/a/195346.png)](https://asciinema.org/a/195346)
+
 ## Install
 
 Fetch the latest binary release of helm-values and install it:
