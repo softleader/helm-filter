@@ -21,5 +21,48 @@ $ helm filter [flags] CHART
 ### Flags
 
 ```sh
+Flags:
+  -h, --help                help for helm
+  -o, --output-dir string   copy all files to output-dir and filter there instead filter in chart path
+      --overwrite-values    overwrite values after filtered out
+  -f, --values string       specify values in a YAML file to filter (default "values.yaml")
+```
 
+## Example
+
+The structure is like:
+
+```js
+.
+├── mychart
+│   ├── Chart.yaml
+│   ├── charts
+│   ├── templates
+│   └── values.yaml
+└── myenv
+    ├── client-a.yaml
+    ├── sit.yaml
+    └── uat.yaml
+```
+
+The script for package different environments chart archive:
+
+```sh
+# Only need to do it once to ignore backup file
+$ echo ".bak" >> mychart/.helmignore
+
+# Merge sit and client-a to values.yaml
+$ helm values mychart -f myenv/sit.yaml -f myenv/client-a.yaml -o mychart
+
+# Filter out and copy to tmp folder
+$ helm filter mychart -o tmp
+
+# Pack
+helm package tmp/mychart
+
+# Remove tmp folder 
+rm -rf tmp 
+
+# Restore values.yaml from backup file
+mv mychart/values.yaml.bak mychart/values.yaml
 ```

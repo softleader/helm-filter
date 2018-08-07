@@ -6,6 +6,7 @@ import (
 	"os"
 	"github.com/spf13/cobra"
 	"path/filepath"
+	"path"
 )
 
 const desc = `
@@ -33,9 +34,12 @@ func main() {
 				return err
 			}
 			// verify filter file exists
+			if !filepath.IsAbs(filterCmd.valuesFile) {
+				filterCmd.valuesFile = path.Join(filterCmd.chartPath, filterCmd.valuesFile)
+			}
 			_, err := os.Stat(filterCmd.valuesFile)
 			if os.IsNotExist(err) {
-				return fmt.Errorf("filter-file '%s' does not exist", filterCmd.valuesFile)
+				return fmt.Errorf("values '%s' does not exist", filterCmd.valuesFile)
 			}
 			return filterCmd.run()
 		},
