@@ -16,7 +16,7 @@ import (
 const (
 	defaultDirectoryPermission = 0755
 	templatesDir               = "templates"
-	filter                     = "__filter"
+	filterOut                  = "__filter_out"
 )
 
 type filterCmd struct {
@@ -55,7 +55,7 @@ func (cmd *filterCmd) run() error {
 		switch vv := v.(type) {
 		case map[interface{}]interface{}:
 			for kk, vvv := range vv {
-				if kk == filter {
+				if kk == filterOut {
 					switch exp := vvv.(type) {
 					case string:
 						r := regexp.MustCompile(exp)
