@@ -66,7 +66,7 @@ $ helm values mychart -f myenv/sit.yaml -f myenv/client-a.yaml -o mychart
 $ helm filter mychart -o tmp
 
 # Pack
-helm package tmp/mychart
+$ helm package tmp/mychart
 
 # Remove tmp folder 
 $ rm -rf tmp 
