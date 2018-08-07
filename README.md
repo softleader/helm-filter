@@ -8,7 +8,7 @@ Helm plugin to filter out template files
 
 ## Install
 
-Fetch the latest binary release of helm-values and install it:
+Fetch the latest binary release of helm-filter and install it:
  
 ```sh
 $ helm plugin install https://github.com/softleader/helm-filter
@@ -65,7 +65,7 @@ $ helm values mychart -f myenv/sit.yaml -f myenv/client-a.yaml -o mychart
 # Filter out files in templates-dir and copy to tmp folder
 $ helm filter mychart -o tmp
 
-# Pack
+# Pack chart archive
 $ helm package tmp/mychart
 
 # Remove tmp folder 
