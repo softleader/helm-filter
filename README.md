@@ -56,9 +56,6 @@ The structure is like:
 The script for package different environments chart archive:
 
 ```sh
-# Only need to do it once to ignore backup file
-$ echo ".bak" >> mychart/.helmignore
-
 # Merge sit and client-a to values.yaml
 $ helm values mychart -f myenv/sit.yaml -f myenv/client-a.yaml -o mychart
 
