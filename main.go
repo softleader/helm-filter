@@ -43,6 +43,7 @@ func main() {
 	f := cmd.Flags()
 	f.StringVarP(&filterCmd.isolationDir, "isolation-dir", "i", "", "copy all files in chart path to isolation-dir instead of filter chart path")
 	f.StringVarP(&filterCmd.valuesFile, "values", "f", "values.yaml", "specify values in a YAML file to filter")
+	f.BoolVarP(&filterCmd.overwriteValues, "overwrite-values", "", false, "overwrite values after filtered out")
 
 	if err := cmd.Execute(); err != nil {
 		os.Exit(1)

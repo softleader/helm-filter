@@ -10,18 +10,20 @@ import (
 	"gopkg.in/yaml.v2"
 	"regexp"
 	"github.com/kataras/iris/core/errors"
+	"reflect"
 )
 
 const (
 	defaultDirectoryPermission = 0755
 	templatesDir               = "templates"
-	__filter_regexp            = "__filter_regexp"
+	filter                     = "__filter"
 )
 
 type filterCmd struct {
-	chartPath    string
-	isolationDir string
-	valuesFile   string
+	chartPath       string
+	isolationDir    string
+	valuesFile      string
+	overwriteValues bool
 }
 
 func (cmd *filterCmd) run() error {
@@ -29,6 +31,7 @@ func (cmd *filterCmd) run() error {
 
 	// isolate chart path if provided
 	if cmd.isolationDir != "" {
+		cmd.isolationDir = path.Join(cmd.isolationDir, path.Base(cmd.chartPath))
 		err := deepCopy(cmd.chartPath, cmd.isolationDir)
 		if err != nil {
 			return err
@@ -52,7 +55,7 @@ func (cmd *filterCmd) run() error {
 		switch vv := v.(type) {
 		case map[interface{}]interface{}:
 			for kk, vvv := range vv {
-				if kk == __filter_regexp {
+				if kk == filter {
 					switch exp := vvv.(type) {
 					case string:
 						r := regexp.MustCompile(exp)
@@ -61,9 +64,10 @@ func (cmd *filterCmd) run() error {
 							return err
 						}
 						delete(values, k)
-						break
+					case nil:
+						delete(vv, kk)
 					default:
-						return errors.New(fmt.Sprintf("value of %s must be string", kk))
+						return errors.New(fmt.Sprintf("value of %s must be string, but got %v", kk, reflect.TypeOf(exp)))
 					}
 					break
 				}
@@ -71,14 +75,15 @@ func (cmd *filterCmd) run() error {
 		}
 	}
 
-	b, err := yaml.Marshal(values)
-	if err != nil {
-		return err
+	if cmd.overwriteValues {
+		b, err := yaml.Marshal(values)
+		if err != nil {
+			return err
+		}
+		out := path.Join(cmd.isolationDir, path.Base(cmd.valuesFile))
+		fmt.Printf("overwrote %s\n", out)
+		ioutil.WriteFile(out, b, defaultDirectoryPermission)
 	}
-
-	out := path.Join(cmd.isolationDir, path.Base(cmd.valuesFile))
-	fmt.Printf("wrote %s\n", out)
-	ioutil.WriteFile(out, b, defaultDirectoryPermission)
 
 	return nil
 }
@@ -118,7 +123,7 @@ func ensureDirectoryExist(dir string) error {
 func deleteFilesIfMatch(templatesPath string, r *regexp.Regexp) error {
 	return filepath.Walk(templatesPath, func(path string, f os.FileInfo, err error) error {
 		if !f.IsDir() && r.MatchString(f.Name()) {
-			fmt.Printf("filtering out '%s'", path)
+			fmt.Printf("filtering out '%s'\n", path)
 			return os.Remove(path)
 
 		}

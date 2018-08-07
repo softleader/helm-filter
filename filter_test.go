@@ -18,9 +18,9 @@ func TestRun(t *testing.T) {
 	cmd := filterCmd{
 		chartPath: path.Join(tmp, chart),
 	}
-	cmd.isolationDir = path.Join(cmd.chartPath, "filtered")
-	cmd.valuesFile = path.Join(cmd.chartPath, "values-filter.yaml")
-
+	cmd.isolationDir = path.Join(cmd.chartPath, "tmp")
+	cmd.valuesFile = path.Join(cmd.chartPath, "values-filter2.yaml")
+	cmd.overwriteValues = true
 	os.RemoveAll(cmd.isolationDir)
 
 	err := cmd.run()
