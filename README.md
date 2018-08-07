@@ -12,6 +12,12 @@ Fetch the latest binary release of helm-values and install it:
 $ helm plugin install https://github.com/softleader/helm-filter
 ```
 
+Or have fun with Docker!
+
+```sh
+$ docker pull softleader/helm
+```
+
 ## Usage
  
 ```sh
@@ -61,8 +67,8 @@ $ helm filter mychart -o tmp
 helm package tmp/mychart
 
 # Remove tmp folder 
-rm -rf tmp 
+$ rm -rf tmp 
 
 # Restore values.yaml from backup file
-mv mychart/values.yaml.bak mychart/values.yaml
+$ mv mychart/values.yaml.bak mychart/values.yaml
 ```
