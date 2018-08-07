@@ -53,6 +53,13 @@ The structure is like:
     └── uat.yaml
 ```
 
+*client-a.yaml* is like:
+
+```yaml
+ingress:
+  __filter_out: ingress*
+```
+
 The script for package different environments chart archive:
 
 ```sh
