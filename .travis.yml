@@ -9,5 +9,10 @@ go:
 # - http://docs.travis-ci.com/user/workers/standard-infrastructure/
 sudo: false
 
+install:
+  - go get -u github.com/helm/helm
+  - cd $GOPATH/src/github.com/helm/helm && make bootstrap build && cd -
+  - helm init -c
+
 script:
   - make bootstrap test dist
