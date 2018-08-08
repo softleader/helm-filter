@@ -9,9 +9,5 @@ go:
 # - http://docs.travis-ci.com/user/workers/standard-infrastructure/
 sudo: false
 
-install:
-  - curl https://raw.githubusercontent.com/kubernetes/helm/master/scripts/get | bash
-  - helm init -c
-
 script:
   - make bootstrap test dist
