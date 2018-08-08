@@ -15,4 +15,5 @@ sudo: false
 #  - glide install --strip-vendor
 
 script:
+  - echo $GOPATH
   - echo $PATH
