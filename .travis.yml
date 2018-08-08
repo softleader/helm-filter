@@ -10,4 +10,4 @@ go:
 sudo: false
 
 script:
-  - make dist
+  - make bootstrap test dist
