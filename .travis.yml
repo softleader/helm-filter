@@ -10,7 +10,4 @@ go:
 sudo: false
 
 script:
-  - echo $GOPATH
-  - echo $PATH
-  - go get -u github.com/Masterminds/glide
-  - glide --version
+  - make dist
