@@ -14,7 +14,3 @@ install:
 
 script:
   - make bootstrap test dist
-
-cache:
-  directories:
-    - $GOPATH/src/k8s.io/helm
