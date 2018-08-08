@@ -7,12 +7,14 @@ go:
 # VMs to run the tests. For more details see:
 # - http://docs.travis-ci.com/user/workers/container-based-infrastructure/
 # - http://docs.travis-ci.com/user/workers/standard-infrastructure/
-sudo: false
+sudo: required
 
 install:
-  - mkdir -p $GOPATH/src/k8s.io/helm && git clone https://github.com/kubernetes/helm.git $GOPATH/src/k8s.io/helm
-  - cd $GOPATH/src/k8s.io/helm && make bootstrap build && cd -
-  - helm init -c
+  - curl https://raw.githubusercontent.com/kubernetes/helm/master/scripts/get | bash
 
 script:
   - make bootstrap test dist
+
+cache:
+  directories:
+    - $GOPATH/src/k8s.io/helm
