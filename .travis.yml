@@ -1,16 +1,19 @@
 language: go
-
 go:
-  - "1.10.x"
-
-# Setting sudo access to false will let Travis CI use containers rather than
-# VMs to run the tests. For more details see:
-# - http://docs.travis-ci.com/user/workers/container-based-infrastructure/
-# - http://docs.travis-ci.com/user/workers/standard-infrastructure/
+- 1.10.x
 sudo: required
-
 install:
-  - curl https://raw.githubusercontent.com/kubernetes/helm/master/scripts/get | bash
-
+- curl https://raw.githubusercontent.com/kubernetes/helm/master/scripts/get | bash
 script:
-  - make bootstrap test dist
+- make bootstrap test dist
+deploy:
+  provider: releases
+  api_key: ${env.GITHUB_OAUTH_TOKEN}
+  file_glob: true
+  file: _dist/*
+  skip_cleanup: true
+  on:
+    tags: true
+env:
+  global:
+    secure: e2BTzJHAOWhOxdR3NY11GhjYqVzvYfd/w26DIiKAmmMNu8PYRieyY1DPWeu+ZLSpTFBiNGTXBh7zzs2UoClVz0mHq4JrQvo368umKzhpSNGx6kW3KbzGcZ/86yaW0L2V1jEkw6+RVq0/ZNz6Bpb+KJeElkTFUpJWplIBBIjylpjAHt8U5AQaRrqr4tbrnIdbw4klnE7XI/YwcbTcU3s7mbP7+9dO7kxK7+W0+5RkKM1qhUPkDepy6iUvuoSiP2UUZMbr0lLRQ05e+bpEHo/H/VitePcD5DmCy5SDuD8+1a8dEP5conTHTXWjjAt18rbOXZFhju3UvVKRFM4QHauOvfH3RNwR9NBYtFSer3Yw9E3QIPzJQQy0uMZqaQF8yUD8Ul7nqJ62p4F22dSCB4hpxatGo4EXquLc9xSjnVAbmmpVKt7lvBh0bNR5Yqz9BI3aoiHfTp/torsocPej8vgoPlUMq16+whajBSX9KuimOejePKA+BHb606eKQFJyoFIb0zf56ZQq4Z6NbisZMppFjnkwpiea6ljfpHj9jY3C12Q2Y2SX3lVl6Tw1qn+DEuDDvyeyEF0jcCa9Bwrd1NCwl+ZpqLfBiLyNuPPYCV9Cl1+6AbNRwi0w0UbkATtUoL8bqauDjYsRxC5zpbDLiYBtSJp/1YJ3TkRzxFyl7Snj030=
