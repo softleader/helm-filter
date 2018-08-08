@@ -8,13 +8,17 @@ LDFLAGS := "-X main.version=${VERSION}"
 BINARY := filter
 
 .PHONY: install
-install: bootstrap build
+install: bootstrap test build
 	mkdir -p $(HELM_PLUGIN_DIR)
 	cp $(BUILD)/$(BINARY) $(HELM_PLUGIN_DIR)
 	cp plugin.yaml $(HELM_PLUGIN_DIR)
 
 .PHONY: hookInstall
-hookInstall: bootstrap build
+hookInstall: bootstrap test build
+
+.PHONY: test
+test:
+	go test -v
 
 .PHONY: build
 build:
