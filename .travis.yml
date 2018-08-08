@@ -5,7 +5,9 @@ sudo: required
 install:
 - curl https://raw.githubusercontent.com/kubernetes/helm/master/scripts/get | bash
 script:
-- make bootstrap test dist
+- make bootstrap test
+before_deploy:
+- VERSION=${TRAVIS_TAG} make dist
 deploy:
   provider: releases
   api_key: ${env.GITHUB_OAUTH_TOKEN}
