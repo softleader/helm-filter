@@ -10,8 +10,8 @@ go:
 sudo: false
 
 install:
-  - go get -u github.com/helm/helm
-  - cd $GOPATH/src/github.com/helm/helm && make bootstrap build && cd -
+  - mkdir -p $GOPATH/src/k8s.io/helm && git clone https://github.com/kubernetes/helm.git $GOPATH/src/k8s.io/helm
+  - cd $GOPATH/src/k8s.io/helm && make bootstrap build && cd -
   - helm init -c
 
 script:
