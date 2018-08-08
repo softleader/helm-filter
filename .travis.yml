@@ -9,11 +9,8 @@ go:
 # - http://docs.travis-ci.com/user/workers/standard-infrastructure/
 sudo: false
 
-#install:
-#  - go get -v github.com/Masterminds/glide
-#  - cd $GOPATH/src/github.com/Masterminds/glide && go install && cd -
-#  - glide install --strip-vendor
-
 script:
   - echo $GOPATH
   - echo $PATH
+  - go get -u github.com/Masterminds/glide
+  - glide --version
