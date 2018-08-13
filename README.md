@@ -1,5 +1,5 @@
 [![Build Status](https://travis-ci.org/softleader/helm-filter.svg?branch=master)](https://travis-ci.org/softleader/helm-filter)
-[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://github.com/shihyuho/helm-values/blob/master/LICENSE)
+[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://github.com/softleader/helm-filter/blob/master/LICENSE)
 
 # Helm Filter Plugin
 
