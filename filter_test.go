@@ -6,6 +6,7 @@ import (
 	"os"
 	"os/exec"
 	"io/ioutil"
+	"gopkg.in/yaml.v2"
 )
 
 func TestRun(t *testing.T) {
@@ -40,5 +41,43 @@ ingress:
 	err = cmd.run()
 	if err != nil {
 		t.Error(err)
+	}
+}
+
+func TestFilter(t *testing.T) {
+	slice := yaml.MapSlice{}
+	err := yaml.Unmarshal([]byte(`
+replicaCount: 1
+service: 
+  type: ClusterIP
+  port: 80
+ingress:
+  __filter_out: ingress 
+  enabled: false
+  annotations: {}
+  path: /
+  hosts:
+  - chart-example.local
+  tls: []
+resources: {}
+nodeSelector: {}
+tolerations: []
+affinity: {}`), &slice)
+	if err != nil {
+		t.Error(err)
+	}
+
+	err = filter(&slice, func(regexp string) error {
+		// fmt.Println("-----found regex:", regexp)
+		return nil
+	})
+	if err != nil {
+		t.Error(err)
+	}
+
+	for _, v := range slice {
+		if k := v.Key.(string); k == "ingress" {
+			t.Errorf("ingress should be filtered..")
+		}
 	}
 }

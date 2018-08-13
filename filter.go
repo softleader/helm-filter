@@ -1,7 +1,6 @@
 package main
 
 import (
-	"github.com/otiai10/copy"
 	"path"
 	"path/filepath"
 	"os"
@@ -10,7 +9,6 @@ import (
 	"gopkg.in/yaml.v2"
 	"regexp"
 	"reflect"
-	"errors"
 )
 
 const (
@@ -51,28 +49,12 @@ func (cmd *filterCmd) run() error {
 	}
 
 	// 只先固定檢查在第二層的 key
-	for k, v := range values {
-		switch vv := v.(type) {
-		case map[interface{}]interface{}:
-			for kk, vvv := range vv {
-				if kk == filterOut {
-					switch exp := vvv.(type) {
-					case string:
-						r := regexp.MustCompile(exp)
-						err := deleteFilesIfMatch(templatesPath, r)
-						if err != nil {
-							return err
-						}
-						delete(values, k)
-					case nil:
-						delete(vv, kk)
-					default:
-						return errors.New(fmt.Sprintf("value of %s must be string, but got %v", kk, reflect.TypeOf(exp)))
-					}
-					break
-				}
-			}
-		}
+	err = filter(&values, func(exp string) error {
+		r := regexp.MustCompile(exp)
+		return deleteFilesIfMatch(templatesPath, r)
+	})
+	if err != nil {
+		return err
 	}
 
 	if cmd.overwriteValues {
@@ -85,28 +67,6 @@ func (cmd *filterCmd) run() error {
 		ioutil.WriteFile(out, b, defaultDirectoryPermission)
 	}
 
-	return nil
-}
-
-func deepCopy(src, dst string) error {
-	// 先 copy 到 tmp 防止新的目錄也在同一層會無限 loop 下去
-	tmp, err := ioutil.TempDir(os.TempDir(), "helm-filter")
-	defer os.RemoveAll(tmp)
-	if err != nil {
-		return err
-	}
-	err = copy.Copy(src, tmp)
-	if err != nil {
-		return err
-	}
-	err = ensureDirectoryExist(dst)
-	if err != nil {
-		return err
-	}
-	err = copy.Copy(tmp, dst)
-	if err != nil {
-		return err
-	}
 	return nil
 }
 
@@ -131,14 +91,44 @@ func deleteFilesIfMatch(templatesPath string, r *regexp.Regexp) error {
 	})
 }
 
-func vals(valuesFile string) (map[string]interface{}, error) {
-	base := map[string]interface{}{}
+func filter(slice *yaml.MapSlice, consume func(regexp string) error) error {
+	for i, v := range *slice {
+		vv, isSlice := v.Value.(yaml.MapSlice)
+		if isSlice {
+			for _, vvv := range vv {
+				if vvv.Key == filterOut {
+					switch exp := vvv.Value.(type) {
+					case string:
+						err := consume(exp)
+						if err != nil {
+							return err
+						}
+						delete(slice, i)
+					case nil:
+						return fmt.Errorf("can not left blank on %s", vvv.Key)
+					default:
+						return fmt.Errorf("value of %s must be string, but got %v", vvv.Key, reflect.TypeOf(exp))
+					}
+					break
+				}
+			}
+		}
+	}
+	return nil
+}
+
+func vals(valuesFile string) (yaml.MapSlice, error) {
+	base := yaml.MapSlice{}
 	bytes, err := ioutil.ReadFile(valuesFile)
 	if err != nil {
-		return map[string]interface{}{}, err
+		return yaml.MapSlice{}, err
 	}
 	if err := yaml.Unmarshal(bytes, &base); err != nil {
-		return map[string]interface{}{}, fmt.Errorf("failed to parse %s: %s", base, err)
+		return yaml.MapSlice{}, fmt.Errorf("failed to parse %s: %s", base, err)
 	}
 	return base, nil
+}
+
+func delete(slice *yaml.MapSlice, index int) {
+	*slice = append((*slice)[:index], (*slice)[index+1:]...)
 }
