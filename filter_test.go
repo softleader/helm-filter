@@ -7,6 +7,7 @@ import (
 	"os/exec"
 	"io/ioutil"
 	"gopkg.in/yaml.v2"
+	"fmt"
 )
 
 func TestRun(t *testing.T) {
@@ -45,20 +46,21 @@ ingress:
 }
 
 func TestFilter(t *testing.T) {
-	slice := yaml.MapSlice{}
+	var slice []yaml.MapItem
 	err := yaml.Unmarshal([]byte(`
 replicaCount: 1
-service: 
-  type: ClusterIP
-  port: 80
+service:
+ __filter_out: 
+ type: ClusterIP
+ port: 80
 ingress:
-  __filter_out: ingress 
-  enabled: false
-  annotations: {}
-  path: /
-  hosts:
-  - chart-example.local
-  tls: []
+ __filter_out: ingress*
+ enabled: false
+ annotations: {}
+ path: /
+ hosts:
+ - chart-example.local
+ tls: []
 resources: {}
 nodeSelector: {}
 tolerations: []
@@ -67,17 +69,23 @@ affinity: {}`), &slice)
 		t.Error(err)
 	}
 
-	err = filter(&slice, func(regexp string) error {
-		// fmt.Println("-----found regex:", regexp)
+	marshalPrint(slice)
+
+	filtered, err := filter(slice, func(regexp string) error {
+		fmt.Println("~~~ found", regexp)
 		return nil
 	})
 	if err != nil {
 		t.Error(err)
 	}
 
-	for _, v := range slice {
-		if k := v.Key.(string); k == "ingress" {
-			t.Errorf("ingress should be filtered..")
-		}
+	marshalPrint(filtered)
+}
+
+func marshalPrint(i interface{}) {
+	b, e := yaml.Marshal(i)
+	if e != nil {
+		panic(e)
 	}
+	fmt.Println(string(b))
 }

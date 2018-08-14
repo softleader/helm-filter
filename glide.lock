@@ -1,5 +1,5 @@
-hash: 588f4d9ac9e39c4a63feb9f2bc88fc2ad1bf3027541fc9f374cc2580d05da3a5
-updated: 2018-08-07T17:58:51.217059+08:00
+hash: 75d834023385f9a499f1fc09800fbc737ee08d5b29fc6fffaae7ab7ba7143637
+updated: 2018-08-14T09:26:59.366633+08:00
 imports:
 - name: github.com/inconshreveable/mousetrap
   version: 76626ae9c91c4f2a10f34cad8ce83ea42c93bb75
@@ -9,6 +9,8 @@ imports:
   version: 7c4570c3ebeb8129a1f7456d0908a8b676b6f9f1
 - name: github.com/spf13/pflag
   version: 3ebe029320b2676d667ae88da602a5f854788a8a
+- name: github.com/thoas/go-funk
+  version: e2f8da694c9c4fa123eea42cb0d6d47e08f11ff6
 - name: gopkg.in/yaml.v2
   version: 5420a8b6744d3b0345ab293f6fcba19c978f1183
 testImports: []

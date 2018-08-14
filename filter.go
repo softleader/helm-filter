@@ -49,7 +49,7 @@ func (cmd *filterCmd) run() error {
 	}
 
 	// 只先固定檢查在第二層的 key
-	err = filter(&values, func(exp string) error {
+	values, err = filter(values, func(exp string) error {
 		r := regexp.MustCompile(exp)
 		return deleteFilesIfMatch(templatesPath, r)
 	})
@@ -91,32 +91,6 @@ func deleteFilesIfMatch(templatesPath string, r *regexp.Regexp) error {
 	})
 }
 
-func filter(slice *yaml.MapSlice, consume func(regexp string) error) error {
-	for i, v := range *slice {
-		vv, isSlice := v.Value.(yaml.MapSlice)
-		if isSlice {
-			for _, vvv := range vv {
-				if vvv.Key == filterOut {
-					switch exp := vvv.Value.(type) {
-					case string:
-						err := consume(exp)
-						if err != nil {
-							return err
-						}
-						delete(slice, i)
-					case nil:
-						return fmt.Errorf("can not left blank on %s", vvv.Key)
-					default:
-						return fmt.Errorf("value of %s must be string, but got %v", vvv.Key, reflect.TypeOf(exp))
-					}
-					break
-				}
-			}
-		}
-	}
-	return nil
-}
-
 func vals(valuesFile string) (yaml.MapSlice, error) {
 	base := yaml.MapSlice{}
 	bytes, err := ioutil.ReadFile(valuesFile)
@@ -129,6 +103,38 @@ func vals(valuesFile string) (yaml.MapSlice, error) {
 	return base, nil
 }
 
-func delete(slice *yaml.MapSlice, index int) {
-	*slice = append((*slice)[:index], (*slice)[index+1:]...)
+func filter(slice yaml.MapSlice, consume func(regexp string) error) (items []yaml.MapItem, err error) {
+	for _, v := range slice {
+		nSlice, isNSlice := v.Value.(yaml.MapSlice)
+
+		// If next level is not type of slice, then just set the key to that value
+		if !isNSlice || len(nSlice) <= 0 {
+			items = append(items, v)
+		}
+
+		var nItem []yaml.MapItem
+		for _, nv := range nSlice {
+			if nv.Key == filterOut {
+				if nv.Value != nil {
+					regexp, isString := nv.Value.(string)
+					if !isString {
+						return []yaml.MapItem{}, fmt.Errorf("value of %s must be string, but got %v", nv.Key, reflect.TypeOf(nv.Value))
+					}
+					err = consume(regexp)
+					if err != nil {
+						return
+					}
+					break
+				} else {
+					continue
+				}
+			}
+			nItem = append(nItem, nv)
+		}
+
+		if len(nItem) > 0 {
+			items = append(items, yaml.MapItem{Key: v.Key, Value: nItem})
+		}
+	}
+	return
 }

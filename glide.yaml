@@ -2,3 +2,5 @@ package: github.com/softleader/helm-filter
 import:
 - package: github.com/spf13/cobra
 - package: github.com/otiai10/copy
+- package: github.com/thoas/go-funk
+  version: ^0.3.0
