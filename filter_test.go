@@ -46,7 +46,7 @@ ingress:
 }
 
 func TestFilter(t *testing.T) {
-	var slice []yaml.MapItem
+	slice := yaml.MapSlice{}
 	err := yaml.Unmarshal([]byte(`
 replicaCount: 1
 service:
@@ -69,23 +69,15 @@ affinity: {}`), &slice)
 		t.Error(err)
 	}
 
-	marshalPrint(slice)
-
 	filtered, err := filter(slice, func(regexp string) error {
-		fmt.Println("~~~ found", regexp)
 		return nil
 	})
 	if err != nil {
 		t.Error(err)
 	}
 
-	marshalPrint(filtered)
-}
-
-func marshalPrint(i interface{}) {
-	b, e := yaml.Marshal(i)
-	if e != nil {
-		panic(e)
+	expected := "[{replicaCount 1} {service [{type ClusterIP} {port 80}]} {resources []} {nodeSelector []} {tolerations []} {affinity []}]"
+	if actual := fmt.Sprint(filtered); actual != expected {
+		t.Errorf("expected: %v\nbut got: %v", expected, actual)
 	}
-	fmt.Println(string(b))
 }
