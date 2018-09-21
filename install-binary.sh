@@ -69,9 +69,9 @@ verifySupported() {
 getDownloadURL() {
   local version=$(git -C $HELM_PLUGIN_PATH describe --tags --exact-match 2>/dev/null)
   if [ -n "$version" ]; then
-    DOWNLOAD_URL="https://api.github.com/repos/$PROJECT_GH/releases/tags/$version"
+    url="https://api.github.com/repos/$PROJECT_GH/releases/tags/$version"
   else
-    DOWNLOAD_URL="https://api.github.com/repos/$PROJECT_GH/releases/latest"
+    url="https://api.github.com/repos/$PROJECT_GH/releases/latest"
   fi
 
   if type "curl" > /dev/null; then
@@ -96,13 +96,9 @@ downloadFile() {
 # installFile verifies the SHA256 for the file, then unpacks and
 # installs it.
 installFile() {
-  HELM_TMP="/tmp/$PROJECT_NAME"
-  mkdir -p "$HELM_TMP"
-  tar xf "$PLUGIN_TMP_FILE" -C "$HELM_TMP"
-  HELM_TMP_BIN="$HELM_TMP/bin"
   echo "Preparing to install into ${HELM_PLUGIN_PATH}"
   mkdir -p "$HELM_PLUGIN_PATH/bin"
-  cp -r "$HELM_TMP_BIN/*" "$HELM_PLUGIN_PATH/bin"
+  tar xf "$PLUGIN_TMP_FILE" -C "$HELM_PLUGIN_PATH/bin"
 }
 
 # fail_trap is executed if an error occurs.
@@ -118,7 +114,7 @@ fail_trap() {
 # testVersion tests the installed client to make sure it is working.
 testVersion() {
   set +e
-  echo "$PROJECT_NAME installed into $HELM_PLUGIN_PATH/$PROJECT_NAME"
+  echo "$PROJECT_NAME installed into $HELM_PLUGIN_PATH"
   $HELM_PLUGIN_PATH/bin/$BINARY -h
   set -e
 }
