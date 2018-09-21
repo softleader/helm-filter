@@ -6,5 +6,5 @@ usage: "filter out template files"
 description: "Filter out template files."
 command: "$HELM_PLUGIN_DIR/bin/filter"
 hooks:
-  install: "$HELM_PLUGIN_DIR/install.sh"
-  update: "$HELM_PLUGIN_DIR/install.sh"
+  install: "$HELM_PLUGIN_DIR/install-binary.sh"
+  update: "$HELM_PLUGIN_DIR/install-binary.sh"
