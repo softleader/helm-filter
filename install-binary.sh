@@ -1,9 +1,43 @@
-#!/usr/bin/env bash
+#!/bin/bash
 
-BINARY="filter"
-PROJECT_NAME="helm-"$BINARY
+# Copied from https://github.com/technosophos/helm-template
+
+BINARY=filter
+PROJECT_NAME="helm-$BINARY"
 PROJECT_GH="softleader/$PROJECT_NAME"
 
+: ${HELM_PLUGIN_PATH:="$(helm home --debug=false)/plugins/$PROJECT_NAME"}
+
+# Convert the HELM_PLUGIN_PATH to unix if cygpath is
+# available. This is the case when using MSYS2 or Cygwin
+# on Windows where helm returns a Windows path but we
+# need a Unix path
+
+if type cygpath > /dev/null 2>&1; then
+  HELM_PLUGIN_PATH=$(cygpath -u $HELM_PLUGIN_PATH)
+fi
+
+if [[ $SKIP_BIN_INSTALL == "1" ]]; then
+  echo "Skipping binary install"
+  exit
+fi
+
+# initArch discovers the architecture for this system.
+initArch() {
+  ARCH=$(uname -m)
+  case $ARCH in
+    armv5*) ARCH="armv5";;
+    armv6*) ARCH="armv6";;
+    armv7*) ARCH="armv7";;
+    aarch64) ARCH="arm64";;
+    x86) ARCH="386";;
+    x86_64) ARCH="amd64";;
+    i686) ARCH="386";;
+    i386) ARCH="386";;
+  esac
+}
+
+# initOS discovers the operating system for this system.
 initOS() {
   OS=$(echo `uname`|tr '[:upper:]' '[:lower:]')
 
@@ -16,6 +50,8 @@ initOS() {
   esac
 }
 
+# verifySupported checks that the os/arch combination is supported for
+# binary builds.
 verifySupported() {
   local supported="linux-amd64\nmacos-amd64\nwindows-amd64"
   if ! echo "${supported}" | grep -q "${OS}-${ARCH}"; then
@@ -29,35 +65,44 @@ verifySupported() {
   fi
 }
 
+# getDownloadURL checks the latest available version.
 getDownloadURL() {
+  local version=$(git -C $HELM_PLUGIN_PATH describe --tags --exact-match 2>/dev/null)
   if [ -n "$version" ]; then
-    url="https://api.github.com/repos/$PROJECT_GH/releases/tags/$version"
+    DOWNLOAD_URL="https://api.github.com/repos/$PROJECT_GH/releases/tags/$version"
   else
-    url="https://api.github.com/repos/$PROJECT_GH/releases/latest"
+    DOWNLOAD_URL="https://api.github.com/repos/$PROJECT_GH/releases/latest"
   fi
 
   if type "curl" > /dev/null; then
     DOWNLOAD_URL=$(curl -s $url | grep $OS | awk '/\"browser_download_url\":/{gsub( /[,\"]/,"", $2); print $2}')
   elif type "wget" > /dev/null; then
-    DOWNLOAD_URL=$(wget -q -O - $url | awk '/\"browser_download_url\":/{gsub( /[,\"]/,"", $2); print $2}')
+    DOWNLOAD_URL=$(wget -q -O - $url | grep $OS | awk '/\"browser_download_url\":/{gsub( /[,\"]/,"", $2); print $2}')
   fi
 }
 
+# downloadFile downloads the latest binary package and also the checksum
+# for that binary.
 downloadFile() {
-  PLUGIN_FILE="$HELM_PLUGIN_DIR/${PROJECT_NAME}.tgz"
+  PLUGIN_TMP_FILE="/tmp/${PROJECT_NAME}.tgz"
   echo "Downloading $DOWNLOAD_URL"
   if type "curl" > /dev/null; then
-    curl -L "$DOWNLOAD_URL" -o "$PLUGIN_FILE"
+    curl -L "$DOWNLOAD_URL" -o "$PLUGIN_TMP_FILE"
   elif type "wget" > /dev/null; then
-    wget -q -O "$PLUGIN_FILE" "$DOWNLOAD_URL"
+    wget -q -O "$PLUGIN_TMP_FILE" "$DOWNLOAD_URL"
   fi
 }
 
+# installFile verifies the SHA256 for the file, then unpacks and
+# installs it.
 installFile() {
-  BIN="$HELM_PLUGIN_DIR/bin"
-  rm -rf $BIN && mkdir $BIN
-  tar xf $PLUGIN_FILE -C $BIN > /dev/null
-  rm -f $PLUGIN_FILE
+  HELM_TMP="/tmp/$PROJECT_NAME"
+  mkdir -p "$HELM_TMP"
+  tar xf "$PLUGIN_TMP_FILE" -C "$HELM_TMP"
+  HELM_TMP_BIN="$HELM_TMP/bin"
+  echo "Preparing to install into ${HELM_PLUGIN_PATH}"
+  mkdir -p "$HELM_PLUGIN_PATH/bin"
+  cp -r "$HELM_TMP_BIN/*" "$HELM_PLUGIN_PATH/bin"
 }
 
 # fail_trap is executed if an error occurs.
@@ -65,7 +110,7 @@ fail_trap() {
   result=$?
   if [ "$result" != "0" ]; then
     echo "Failed to install $PROJECT_NAME"
-    echo "For support, go to https://github.com/$PROJECT_GH"
+    echo "\tFor support, go to https://github.com/$PROJECT_GH"
   fi
   exit $result
 }
@@ -73,11 +118,8 @@ fail_trap() {
 # testVersion tests the installed client to make sure it is working.
 testVersion() {
   set +e
-  echo "$PROJECT_NAME installed into $HELM_PLUGIN_DIR"
-  # To avoid to keep track of the Windows suffix,
-  # call the plugin assuming it is in the PATH
-  PATH=$PATH:$BIN
-  $BINARY -h
+  echo "$PROJECT_NAME installed into $HELM_PLUGIN_PATH/$PROJECT_NAME"
+  $HELM_PLUGIN_PATH/bin/$BINARY -h
   set -e
 }
 
@@ -86,6 +128,7 @@ testVersion() {
 #Stop execution on any error
 trap "fail_trap" EXIT
 set -e
+initArch
 initOS
 verifySupported
 getDownloadURL
